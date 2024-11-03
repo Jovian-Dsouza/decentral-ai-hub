@@ -1,14 +1,13 @@
 "use client"
 
-import { useState } from 'react'
 import { Header } from '@/components/common/Header'
 import { DatasetFilters } from '@/components/common/DatasetFilters'
 import { DatasetCard } from '@/components/common/DatasetCard'
-import { initialDatasets } from '@/data/sampleData'
-import { Dataset } from '@/types/dataset'
+import { datasetsAtom } from '@/store/atoms/datasetAtoms'
+import { useRecoilValue } from 'recoil'
 
 export default function Home() {
-  const [datasets, setDatasets] = useState<Dataset[]>(initialDatasets)
+  const datasets = useRecoilValue(datasetsAtom)
 
   return (
     <div className="container mx-auto p-4">
