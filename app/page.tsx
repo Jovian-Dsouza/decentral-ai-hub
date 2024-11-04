@@ -6,6 +6,8 @@ import { DatasetCard } from '@/components/common/DatasetCard'
 import { UploadDatasetDialog } from '@/components/common/UploadDatasetDialog'
 import { datasetsAtom } from '@/store/atoms/datasetAtoms'
 import { useRecoilValue } from 'recoil'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+
 
 export default function Home() {
   const datasets = useRecoilValue(datasetsAtom)
@@ -21,6 +23,9 @@ export default function Home() {
         {datasets.map((dataset) => (
           <DatasetCard key={dataset.id} dataset={dataset} />
         ))}
+      </div>
+      <div className="fixed bottom-12 z-50">
+        <ConnectButton />
       </div>
     </div>
   )
