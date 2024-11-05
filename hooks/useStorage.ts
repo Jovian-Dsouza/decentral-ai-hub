@@ -29,12 +29,12 @@ export function useStorage() {
     }
   };
 
-  const downloadFile = async (rootHash: string, outputPath: string) => {
+  const downloadFile = async (rootHash: string, fileName: string) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const success = await storageService.downloadFile(rootHash, outputPath);
+      const success = await storageService.downloadFile(rootHash, fileName);
       return success;
     } catch (err) {
       setError(err as Error);

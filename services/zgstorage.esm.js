@@ -24144,6 +24144,67 @@ class Downloader {
         err = await this.downloadFileHelper(root, filePath, info.tx.size, proof);
         return err;
     }
+    async downloadBrowserFileHelper(root, size, proof) {
+        const shardConfigs = await getShardConfigs(this.nodes);
+        if (shardConfigs == null) {
+            return [null, new Error('Failed to get shard configs')];
+        }
+
+        const segmentOffset = 0;
+        const numChunks = GetSplitNum(size, DEFAULT_CHUNK_SIZE);
+        const numSegments = GetSplitNum(size, DEFAULT_SEGMENT_SIZE);
+        const numTasks = numSegments - segmentOffset;
+
+        // Create array to store all chunks
+        let chunks = [];
+
+        for (let taskInd = 0; taskInd < numTasks; taskInd++) {
+            let [segArray, err] = await this.downloadTask(
+                root, 
+                size, 
+                segmentOffset, 
+                taskInd, 
+                numSegments, 
+                numChunks, 
+                proof,
+            );
+            
+            if (err != null) {
+                return [null, err];
+            }
+            
+            chunks.push(segArray);
+        }
+
+        // Concatenate all chunks
+        const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+            result.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        return result;
+    }
+    async downloadBrowserFile(root, proof) {
+        var [info, err] = await this.queryFile(root);
+        if (err != null || info === null) {
+            return [null, new Error(err?.message)];
+        }
+        if (!info.finalized) {
+            return [null, new Error('File not finalized')];
+        }
+
+        let shardConfigs = await getShardConfigs(this.nodes);
+        if (shardConfigs === null) {
+            return [null, new Error('Failed to get shard configs')];
+        }
+        this.shardConfigs = shardConfigs;
+
+        return await this.downloadBrowserFileHelper(root, info.tx.size, proof);
+    }
+
     async queryFile(root) {
         let fileInfo = null;
         for (let node of this.nodes) {
@@ -24559,6 +24620,19 @@ class Indexer extends HttpProvider {
         });
         let downloader = new Downloader(clients);
         return await downloader.downloadFile(rootHash, filePath, proof);
+    }
+    async downloadBrowser(rootHash, proof) {
+        let locations = await this.getFileLocations(rootHash);
+        if (locations.length == 0) {
+            return new Error('failed to get file locations');
+        }
+        let clients = [];
+        locations.forEach((node) => {
+            let sn = new StorageNode(node.url);
+            clients.push(sn);
+        });
+        let downloader = new Downloader(clients);
+        return await downloader.downloadBrowserFile(rootHash, proof);
     }
 }
 

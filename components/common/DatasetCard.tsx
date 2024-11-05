@@ -4,13 +4,19 @@ import { Button } from "@/components/ui/button"
 import { Star, BarChart2, GitBranch, CheckCircle, ExternalLink } from 'lucide-react'
 import { Dataset } from "@/types/dataset"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useState } from "react"
+import { DownloadModal } from "./DownloadModal"
 
 interface DatasetCardProps {
   dataset: Dataset;
+  onUse?: (dataset: Dataset) => void;
 }
 
-export function DatasetCard({ dataset }: DatasetCardProps) {
+export function DatasetCard({ dataset , onUse }: DatasetCardProps) {
+  const [showDownloadModal, setShowDownloadModal] = useState(false)
+
   return (
+    <>
     <Card className="h-[14rem] flex flex-col group hover:shadow-lg transition-all duration-300 relative">
       <CardHeader className="pb-3">
         <CardTitle className="flex justify-between items-start gap-2">
@@ -92,11 +98,17 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
       <CardFooter className="pt-3">
         <Button 
           className="w-full group-hover:bg-primary/90 transition-colors duration-200"
-          onClick={() => {}}
+          onClick={onUse ? () => onUse(dataset) : () => setShowDownloadModal(true)}
         >
           Use This Dataset <ExternalLink className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
+    <DownloadModal 
+        dataset={dataset}
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+      />
+    </>
   )
 }

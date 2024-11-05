@@ -62,18 +62,26 @@ export function UploadDatasetForm() {
           rootHash: uploadResponse?.rootHash
         })
       console.log("Upload successful")
-      const formData = new FormData(e.currentTarget)
+
+      // Get form values directly from elements
+      const form = e.currentTarget
+      const formElements = form.elements as HTMLCollectionOf<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+      
       // Create new dataset
       const newDataset: Dataset = {
         id: datasets.length + 1,
-        name: formData.get('name') as string,
-        description: formData.get('description') as string,
-        version: formData.get('version') as string,
+        name: formElements.namedItem('name')?.value || '',
+        description: formElements.namedItem('description')?.value || '',
+        version: formElements.namedItem('version')?.value || '',
+        category: formElements.namedItem('category')?.value || '',
         quality: 'Pending' as const,
         usage: 0,
         revenue: 0,
-        rootHash: uploadResponse?.rootHash
+        rootHash: uploadResponse?.rootHash,
+        filename: files[0].name,
+        size: files[0].size
       }
+      console.log("New dataset:", newDataset)
 
       // Add new dataset to state
       setDatasets([...datasets, newDataset])
@@ -85,9 +93,6 @@ export function UploadDatasetForm() {
         error: error instanceof Error ? error.message : 'Something went wrong'
       })
     }
-
-    
-    
     
     // Reset form and close dialog
     e.currentTarget.reset()

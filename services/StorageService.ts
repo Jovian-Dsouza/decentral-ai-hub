@@ -74,16 +74,29 @@ export class StorageService {
         }
     }
 
-    async downloadFile(rootHash: string, outputPath: string): Promise<void> {
+    async downloadFile(rootHash: string, fileName: string): Promise<void> {
         await this.initialize();
         try {
-            const err = await this.indexer.download(rootHash, outputPath, true);
+            const downloadResult = await this.indexer.downloadBrowser(rootHash, true);
             
-            if (err) {
-                throw new Error(`Download error: ${err}`);
+            if (downloadResult instanceof Error) {
+                throw new Error(`Download error: ${downloadResult.message}`);
             }
-            
-            console.log("Download successful");
+            if(downloadResult instanceof Uint8Array) {
+                console.log("Download successful");
+                // Create blob and trigger download
+                const blob = new Blob([downloadResult], { type: 'application/octet-stream' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }
+            // console.log("Download result:", downloadResult)
             
         } catch (error) {
             console.error("Download failed:", error);
