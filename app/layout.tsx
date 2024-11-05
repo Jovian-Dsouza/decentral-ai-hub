@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { RecoilProvider } from "@/components/providers/RecoilProvider";
 import { Providers } from "@/components/providers/RainbowKitProvider";
+import { ToastifyProvider } from "@/components/providers/ToastifyProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,7 +33,9 @@ export default function RootLayout({
       >
         <Providers>
           <RecoilProvider>
-            {children}
+            <ToastifyProvider>
+              {children}
+            </ToastifyProvider>
           </RecoilProvider>
         </Providers>
       </body>
