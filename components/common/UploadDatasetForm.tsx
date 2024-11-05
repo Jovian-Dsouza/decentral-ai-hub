@@ -9,10 +9,26 @@ import { Label } from "@/components/ui/label"
 import { useRecoilState } from 'recoil'
 import { datasetsAtom } from '@/store/atoms/datasetAtoms'
 import { DialogClose } from '@/components/ui/dialog'
+import { useStorage } from '@/hooks/useStorage'
+import { TransactionModal } from "@/components/common/TransactionModal"
+import { toast } from 'react-toastify'
+import { Dataset } from '@/types/dataset'
+
 
 export function UploadDatasetForm() {
   const [files, setFiles] = useState<File[]>([])
   const [datasets, setDatasets] = useRecoilState(datasetsAtom)
+  const { uploadFile } = useStorage()
+  const [transactionState, setTransactionState] = useState<{
+    isOpen: boolean;
+    status: 'processing' | 'success' | 'error';
+    txHash?: string;
+    rootHash?: string;
+    error?: string;
+  }>({
+    isOpen: false,
+    status: 'processing'
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -20,23 +36,58 @@ export function UploadDatasetForm() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    
-    // Create new dataset
-    const newDataset = {
-      id: datasets.length + 1,
-      name: formData.get('name') as string,
-      description: formData.get('description') as string,
-      version: formData.get('version') as string,
-      quality: 'Pending' as const,
-      usage: 0,
-      revenue: 0,
+
+    if(files.length === 0) {
+      toast.error("Please select at least one file to upload")
+      return
     }
 
-    // Add new dataset to state
-    setDatasets([...datasets, newDataset])
+    console.log("Uploading files:", files)
+    setTransactionState({
+      isOpen: true,
+      status: 'processing'
+    })
+
+    try {
+      const uploadResponse = await uploadFile(files[0])
+      console.log("Upload successful. Transaction:", uploadResponse?.tx)
+      console.log("Root Hash:", uploadResponse?.rootHash)
+      
+      setTransactionState({
+          isOpen: true,
+          status: 'success',
+          txHash: uploadResponse?.tx,
+          rootHash: uploadResponse?.rootHash
+        })
+      console.log("Upload successful")
+      const formData = new FormData(e.currentTarget)
+      // Create new dataset
+      const newDataset: Dataset = {
+        id: datasets.length + 1,
+        name: formData.get('name') as string,
+        description: formData.get('description') as string,
+        version: formData.get('version') as string,
+        quality: 'Pending' as const,
+        usage: 0,
+        revenue: 0,
+        rootHash: uploadResponse?.rootHash
+      }
+
+      // Add new dataset to state
+      setDatasets([...datasets, newDataset])
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      setTransactionState({
+        isOpen: true,
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Something went wrong'
+      })
+    }
+
+    
+    
     
     // Reset form and close dialog
     e.currentTarget.reset()
@@ -44,6 +95,7 @@ export function UploadDatasetForm() {
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name">Dataset Name</Label>
@@ -99,5 +151,14 @@ export function UploadDatasetForm() {
         <Button type="submit">Upload Dataset</Button>
       </div>
     </form>
+    <TransactionModal
+        isOpen={transactionState.isOpen}
+        onClose={() => setTransactionState(prev => ({ ...prev, isOpen: false }))}
+        status={transactionState.status}
+        txHash={transactionState.txHash}
+        rootHash={transactionState.rootHash}
+        error={transactionState.error}
+      />
+    </>
   )
 }

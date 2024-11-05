@@ -6,4 +6,5 @@ export interface Dataset {
   quality: 'Verified' | 'Pending';
   usage: number;
   revenue: number;
+  rootHash?: string;
 }

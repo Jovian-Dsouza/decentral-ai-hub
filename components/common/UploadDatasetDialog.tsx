@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,8 +14,10 @@ import { Upload } from 'lucide-react'
 import { UploadDatasetForm } from "./UploadDatasetForm"
 
 export function UploadDatasetDialog() {
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
           <Upload className="mr-2 h-4 w-4" /> Upload Dataset
