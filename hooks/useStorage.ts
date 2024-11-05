@@ -23,7 +23,7 @@ export function useStorage() {
       return result;
     } catch (err) {
       setError(err as Error);
-      return null;
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +38,7 @@ export function useStorage() {
       return success;
     } catch (err) {
       setError(err as Error);
-      return false;
+      throw err;
     } finally {
       setIsLoading(false);
     }

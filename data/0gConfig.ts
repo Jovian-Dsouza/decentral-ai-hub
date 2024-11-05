@@ -2,8 +2,6 @@ export const STORAGE_CONFIG = {
     // Testnet RPC endpoint
     evmRpc: 'https://evmrpc-testnet.0g.ai/',
     
-    privateKey: 'fdabfcb34de0acfc54421d6fd5ffbbf1c0bbd1c99dd76d235fc77a9e499ba94c',
-    
     // Flow contract addresses
     flowAddresses: {
         turbo: '0xbD2C3F0E65eDF5582141C35969d66e34629cC768',  // Faster but expensive

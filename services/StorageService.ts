@@ -3,6 +3,12 @@ import { Blob as ZgBlob, getFlowContract, Indexer } from "./zgstorage.esm.js";
 import { ethers } from 'ethers';
 import { STORAGE_CONFIG } from '../data/0gConfig';
 
+
+export type UploadFileResponse = {
+    tx: string;
+    rootHash: string;
+}
+
 export class StorageService {
 
     private flowContract: any;
@@ -32,7 +38,7 @@ export class StorageService {
         }
     }
 
-    async uploadFile(file: File): Promise<void> {
+    async uploadFile(file: File): Promise<UploadFileResponse> {
         await this.initialize();
         try {
             const zgFile = new ZgBlob(file);
@@ -57,7 +63,11 @@ export class StorageService {
                 throw new Error(`Upload error: ${uploadErr}`);
             }
 
-            console.log("Upload successful. Transaction:", tx);            
+            console.log("Upload successful. Transaction:", tx);
+            return {
+                tx,
+                rootHash: tree?.rootHash()
+            }            
         } catch (error) {
             console.error("Upload failed:", error);
             throw error;
