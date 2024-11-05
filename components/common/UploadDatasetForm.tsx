@@ -51,10 +51,12 @@ export function UploadDatasetForm() {
     })
 
     try {
+      // Get form values directly from elements
+      const form = e.currentTarget
+      const formElements = form.elements as HTMLCollectionOf<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+
       const uploadResponse = await uploadFile(files[0])
-      console.log("Upload successful. Transaction:", uploadResponse?.tx)
-      console.log("Root Hash:", uploadResponse?.rootHash)
-      
+ 
       setTransactionState({
           isOpen: true,
           status: 'success',
@@ -63,10 +65,6 @@ export function UploadDatasetForm() {
         })
       console.log("Upload successful")
 
-      // Get form values directly from elements
-      const form = e.currentTarget
-      const formElements = form.elements as HTMLCollectionOf<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-      
       // Create new dataset
       const newDataset: Dataset = {
         id: datasets.length + 1,
@@ -85,6 +83,10 @@ export function UploadDatasetForm() {
 
       // Add new dataset to state
       setDatasets([...datasets, newDataset])
+
+      // Reset form and close dialog
+      form.reset()
+      setFiles([])
     } catch (error) {
       console.error("Error uploading file:", error)
       setTransactionState({
@@ -93,10 +95,6 @@ export function UploadDatasetForm() {
         error: error instanceof Error ? error.message : 'Something went wrong'
       })
     }
-    
-    // Reset form and close dialog
-    e.currentTarget.reset()
-    setFiles([])
   }
 
   return (
